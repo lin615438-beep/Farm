@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天使柯基魯尼與哈士祈的幸福農場 🐾</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- 頂部 Header & 狀態 HUD -->
+        <header class="top-header">
+            <div class="title-area">
+                <h1>👼 天使柯基「魯尼」與哈士祈 🐾</h1>
+                <div class="subtitle">放鬆療癒的伴侶農場生活</div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-item">
+                    🌾 農場 <span id="farmLevelDisplay">1</span> 等級
+                </div>
+                <div class="stat-item">
+                    🪙 <span id="coinDisplay">60</span> 狗勾幣
+                </div>
+
+                <!-- 哈士祈狀態卡 -->
+                <div class="husky-card">
+                    <span style="font-size: 1.4rem;">🐺</span>
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 2px;">
+                            哈士祈夥伴 <span id="huskyAffectionVal" style="color: #546E7A; font-size: 0.8rem;">Lv.1</span>
+                        </div>
+                        <div class="husky-status-bars">
+                            <div class="bar-wrap" title="哈士祈的心情值">
+                                <span>♥</span>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-happy" id="huskyHappyBar" style="width: 85%;"></div>
+                                </div>
+                            </div>
+                            <div class="bar-wrap" title="哈士祈的飽足度">
+                                <span>🍖</span>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-hunger" id="huskyHungerBar" style="width: 80%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 頂部快捷按鈕 -->
+                <div class="action-buttons">
+                    <button class="btn" id="openAdminBtn" title="管理員後台">
+                        ⚙️ 管理員
+                    </button>
+                    <button class="btn btn-compendium" id="openCompendiumBtn" title="查看農作物品階解鎖圖鑑">
+                        📖 作物圖鑑
+                    </button>
+                    <button class="btn btn-primary" id="openSkinBtn" title="上傳天使柯基魯尼與哈士祈的照片">
+                        🖼️ 更換外觀
+                    </button>
+                    <button class="btn" id="openShopBtn" title="買賣種子與作物">
+                        🏪 農場雜貨
+                    </button>
+                    <button class="btn" id="bgmToggleBtn" title="播放/暫停放鬆音樂">
+                        🎵 音樂
+                    </button>
+                    <button class="btn" id="sfxToggleBtn" title="開關音效">
+                        🔊 音效
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 遊戲主畫布 -->
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- 底部快捷工具列 (種子已整合成單一快捷3) -->
+        <div class="toolbar-container">
+            <div class="tool-btn active" data-tool="hoe" title="鋤頭：翻土開墾農田">
+                <span class="hotkey">1</span>
+                <span class="icon">⛏️</span>
+                <span class="label">翻土</span>
+            </div>
+            <div class="tool-btn" data-tool="water" title="水壺：澆水加速作物生長">
+                <span class="hotkey">2</span>
+                <span class="icon">💧</span>
+                <span class="label">澆水</span>
+            </div>
+            
+            <!-- 整合式種子袋快捷 (按3選取，點擊/按R切換品種) -->
+            <div class="tool-btn seed-tool-wrap" data-tool="seed" id="seedMainBtn" title="播種：點擊切換品種 (或按 R 切換)">
+                <span class="hotkey">3</span>
+                <span class="badge" id="count_active_seed">5</span>
+                <span class="icon" id="activeSeedIcon">🍉</span>
+                <span class="label" id="activeSeedLabel">無籽西瓜種子</span>
+                <span class="seed-switch-pill" id="seedSwitchPill">切換 ▾</span>
+
+                <!-- 浮動種子抽屜 Popover -->
+                <div class="seed-drawer" id="seedDrawer">
+                    <div class="seed-drawer-title">
+                        <span>🌱 選擇播種品種 (或按 R)</span>
+                        <span class="seed-drawer-close" id="closeSeedDrawerBtn">&times;</span>
+                    </div>
+                    <div class="seed-drawer-list" id="seedDrawerList">
+                        <!-- 動態渲染各品種種子 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="tool-btn" data-tool="ball" title="拋球玩具：丟給狗勾撿 (快捷鍵 Q / 4)">
+                <span class="hotkey">4</span>
+                <span class="icon">🎾</span>
+                <span class="label">丟球拋接</span>
+            </div>
+            <div class="tool-btn" data-tool="pet" id="petToolBtn" title="摸摸狗勾提升心情與親密度">
+                <span class="hotkey">5</span>
+                <span class="icon">💖</span>
+                <span class="label" id="petToolLabel">撫摸哈士祈</span>
+            </div>
+            <div class="tool-btn" data-tool="feed" id="feedToolBtn" title="餵食狗勾背包中的美味作物或點心">
+                <span class="hotkey">6</span>
+                <span class="icon">🍖</span>
+                <span class="label" id="feedToolLabel">餵食好料</span>
+            </div>
+        </div>
+
+        <!-- 鍵盤操作指引 -->
+        <div class="controls-hint">
+            ⌨️ <b>鍵盤操作</b>：<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 控制主角移動 ｜ 
+            <kbd>Space 空白鍵</kbd> 或 <kbd>E</kbd> 互動（翻土/澆水/播種/收割/互動） ｜ 
+            <kbd>Q</kbd> 丟球 ｜ 
+            <kbd>1</kbd>~<kbd>6</kbd> 切換工具 ｜ 
+            <kbd>R</kbd> 快速切換種子品種 ｜ 
+            🖱️ 亦可直接用滑鼠點擊工具列、農田或狗勾進行互動！
+        </div>
+    </div>
+
+    <!-- 自訂角色圖片 Modal (放自己的圖) -->
+    <div class="modal-overlay" id="skinModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>🖼️ 更換天使柯基魯尼與哈士祈圖片</h2>
+                <button class="close-btn" id="closeSkinBtn">&times;</button>
+            </div>
+            <div class="skin-config-section">
+                <!-- 天使柯基 魯尼上傳 -->
+                <div class="skin-card">
+                    <div class="skin-preview-box" id="corgiPreview"></div>
+                    <div class="skin-details">
+                        <h3>👼 天使柯基 魯尼 (主角)</h3>
+                        <p>上傳你家魯尼或喜歡的圖片 (PNG / JPG / GIF / WebP)</p>
+                        <label class="file-label">
+                            📁 選擇魯尼圖片
+                            <input type="file" id="corgiImgInput" class="file-input" accept="image/*">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 哈士祈上傳 -->
+                <div class="skin-card">
+                    <div class="skin-preview-box" id="huskyPreview"></div>
+                    <div class="skin-details">
+                        <h3>🐺 哈士祈夥伴</h3>
+                        <p>上傳你家哈士祈或毛孩照片，成為農場忠實守護犬！</p>
+                        <label class="file-label">
+                            📁 選擇哈士祈圖片
+                            <input type="file" id="huskyImgInput" class="file-input" accept="image/*">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 樣式設定 -->
+                <div class="skin-options">
+                    <div style="font-weight: bold; margin-bottom: 4px;">🎨 外觀顯示設定</div>
+                    <label>
+                        <span>裁切方式：</span>
+                        <select id="corgiModeSelect" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #CCC;">
+                            <option value="circle">圓形萌萌徽章模式 (推薦一般生活照，附金邊)</option>
+                            <option value="sprite">透明立繪模式 (適合已去背 PNG 圖片)</option>
+                        </select>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="corgiWingsCheckbox" checked>
+                        <span>在魯尼自訂圖片上自動加上【飄浮天使光環】與【拍動小羽翼】✨</span>
+                    </label>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                    <button class="btn" id="resetSkinBtn" style="color: #D32F2F;">
+                        🔄 恢復預設繪製角色
+                    </button>
+                    <div style="font-size: 0.78rem; color: #8D6E63;">
+                        💡 圖片將自動保存於瀏覽器中，下次打開依然保留！
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 農場雜貨店 Modal -->
+    <div class="modal-overlay" id="shopModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>🏪 狗勾農場雜貨鋪</h2>
+                <button class="close-btn" id="closeShopBtn">&times;</button>
+            </div>
+            <div class="shop-grid">
+                <!-- 販賣作物賺取金幣 -->
+                <div class="shop-col">
+                    <h3>🌾 販賣收成作物</h3>
+                    <div class="shop-list" id="shopSellList"></div>
+                </div>
+                <!-- 購買種子與好料 -->
+                <div class="shop-col">
+                    <h3>🌱 購買種子與狗狗好料</h3>
+                    <div class="shop-list" id="shopBuyList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 農作物品階圖鑑 Modal -->
+    <div class="modal-overlay" id="compendiumModal">
+        <div class="modal-box compendium-box">
+            <div class="modal-header">
+                <h2>📖 農場作物品階圖鑑 (一星～五星)</h2>
+                <button class="close-btn" id="closeCompendiumBtn">&times;</button>
+            </div>
+            <div class="compendium-overview">
+                <div class="compendium-stats-row">
+                    <div class="compendium-stat-badge">
+                        <span class="label">🏆 全品階解鎖進度</span>
+                        <span class="value" id="compendiumUnlockRate">0 / 15 (0%)</span>
+                    </div>
+                    <div class="compendium-stat-badge">
+                        <span class="label">🌾 當前農場等級</span>
+                        <span class="value" id="compendiumFarmLevel">Lv.1</span>
+                    </div>
+                </div>
+                <div class="compendium-progress-wrap">
+                    <div class="compendium-progress-fill" id="compendiumProgressFill" style="width: 0%;"></div>
+                </div>
+                <div class="odds-table-container">
+                    <div class="odds-title">🎲 當前等級收成品階機率 (等級越高，高品階機率越大)：</div>
+                    <div class="odds-badges" id="compendiumOddsBadges">
+                        <!-- 動態填充 1星到5星機率 -->
+                    </div>
+                </div>
+            </div>
+            <div class="compendium-cards-container" id="compendiumCardsList">
+                <!-- 動態填充各作物 1~5 星解鎖詳情卡片 -->
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; border-top: 1.5px dashed #FFE082; padding-top: 10px; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 0.78rem; color: #8D6E63;">💡 提示：提升農場等級可大幅提高收成 4星 與 5星 神品作物的機率！</span>
+                <button class="btn" id="resetCompendiumProgressBtn" style="font-size: 0.78rem; color: #D32F2F; border-color: #FFCDD2;" title="重置進度並重新開始農場">
+                    🔄 重置遊戲進度
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理員密碼驗證 Modal -->
+    <div class="modal-overlay" id="adminPwdModal">
+        <div class="modal-box" style="max-width: 380px; text-align: center;">
+            <div class="modal-header">
+                <h2>🔒 管理員驗證</h2>
+                <button class="close-btn" id="closeAdminPwdBtn">&times;</button>
+            </div>
+            <p style="font-size: 0.88rem; color: #5D4037; margin-bottom: 12px;">請輸入管理員密碼：</p>
+            <input type="password" id="adminPwdInput" class="admin-input" placeholder="••••" style="width: 80%; text-align: center; font-size: 1.25rem; letter-spacing: 5px; margin-bottom: 15px;">
+            <div>
+                <button class="btn btn-primary" id="submitAdminPwdBtn" style="width: 80%; justify-content: center; margin: 0 auto; font-size: 0.95rem; padding: 8px;">進入管理後台</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理員後台設定 Modal -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-box" style="max-width: 650px;">
+            <div class="modal-header">
+                <h2>⚙️ 農場管理員後台設定 (Admin)</h2>
+                <button class="close-btn" id="closeAdminBtn">&times;</button>
+            </div>
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" data-tab="names">🏷️ 角色名稱</button>
+                <button class="admin-tab-btn" data-tab="crops">🌱 作物品種</button>
+                <button class="admin-tab-btn" data-tab="foods">🍖 餵食食物</button>
+            </div>
+            <div id="adminTabContent"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; border-top: 2px solid #EFEBE9; padding-top: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn" id="resetAdminConfigBtn" style="color: #D32F2F;">🔄 恢復名稱/作物預設</button>
+                    <button class="btn" id="resetGameProgressBtn" style="color: #C2185B; background: #FFF0F5; border-color: #F48FB1;" title="清空金幣、等級與圖鑑重新開始">⚠️ 重置遊戲進度</button>
+                </div>
+                <button class="btn btn-primary" id="saveAdminConfigBtn" style="padding: 8px 18px;">💾 儲存並套用設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入腳本 (admin.js 優先載入) -->
+    <script src="js/admin.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/sprites.js"></script>
+    <script src="js/farm.js"></script>
+    <script src="js/husky.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
